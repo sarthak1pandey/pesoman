@@ -1,0 +1,17 @@
+# Optional local Postgres (matches Prisma postgresql provider).
+# Run: docker compose up -d
+# Then: npx prisma db push
+services:
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pesoman
+    volumes:
+      - pesoman_pg:/var/lib/postgresql/data
+
+volumes:
+  pesoman_pg:

@@ -1,0 +1,160 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+// Supabase: use pooled DATABASE_URL for runtime + DIRECT_URL (5432) for migrations (see DEPLOY.md).
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                  String         @id @default(cuid())
+  name                String
+  email               String         @unique
+  emailVerified       DateTime?
+  image               String?
+  createdAt           DateTime       @default(now())
+
+  memberships         TripMember[]
+  paidExpenses        Expense[]      @relation("PaidBy")
+  splits              ExpenseSplit[]
+  settlements         Settlement[]   @relation("Payer")
+  receivedSettlements Settlement[]   @relation("Receiver")
+  accounts            Account[]
+  sessions            Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Trip {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  emoji       String    @default("✈️")
+  coverImage  String?
+  currency    String    @default("INR")
+  startDate   DateTime?
+  endDate     DateTime?
+  status      String    @default("ACTIVE") // ACTIVE | SETTLED | ARCHIVED
+  inviteToken String    @unique @default(cuid())
+  shareToken  String?   @unique @default(cuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  members     TripMember[]
+  expenses    Expense[]
+  settlements Settlement[]
+}
+
+model TripMember {
+  id       String   @id @default(cuid())
+  role     String   @default("MEMBER") // ADMIN | MEMBER
+  joinedAt DateTime @default(now())
+  nickname String?
+
+  userId String
+  tripId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trip   Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tripId])
+}
+
+model Expense {
+  id         String   @id @default(cuid())
+  title      String
+  amount     Float
+  category   String   @default("OTHER") // FOOD | TRANSPORT | ...
+  notes      String?
+  receiptUrl String?
+  location   String?
+  latitude   Float?
+  longitude  Float?
+  splitType  String   @default("EQUAL") // EQUAL | UNEQUAL | PERCENTAGE
+  date       DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tripId   String
+  paidById String
+  trip     Trip            @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  paidBy   User            @relation("PaidBy", fields: [paidById], references: [id])
+  splits   ExpenseSplit[]
+}
+
+model ExpenseSplit {
+  id         String  @id @default(cuid())
+  amount     Float
+  percentage Float?
+
+  expenseId String
+  userId    String
+  expense   Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@unique([expenseId, userId])
+}
+
+model Settlement {
+  id         String    @id @default(cuid())
+  amount     Float
+  method     String    @default("MANUAL") // MANUAL | UPI | PAYPAL
+  note       String?
+  status     String    @default("PENDING") // PENDING | CONFIRMED | DISPUTED
+  settledAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  tripId     String
+  payerId    String
+  receiverId String
+  trip       Trip @relation(fields: [tripId], references: [id])
+  payer      User @relation("Payer", fields: [payerId], references: [id])
+  receiver   User @relation("Receiver", fields: [receiverId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  type      String // EXPENSE_ADDED, SETTLEMENT, INVITE, etc.
+  tripId    String?
+  createdAt DateTime @default(now())
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
