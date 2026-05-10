@@ -12,7 +12,7 @@ import ExpenseCard from "@/components/trip/ExpenseCard";
 import AddExpenseModal from "@/components/trip/AddExpenseModal";
 import TripBannerImage from "@/components/trip/TripBannerImage";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Plus, ArrowLeft, Wallet, Users, Receipt } from "lucide-react";
+import { Plus, ArrowLeft, Wallet, Users, Receipt, Link as LinkIcon, Check } from "lucide-react";
 import Link from "next/link";
 
 type Tab = "expenses" | "balances" | "members";
@@ -25,6 +25,15 @@ export default function TripDetailPage() {
   const { data: balanceData } = useBalances(tripId);
   const [activeTab, setActiveTab] = useState<Tab>("expenses");
   const [showAddExpense, setShowAddExpense] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const copyInviteLink = () => {
+    if (!trip?.inviteToken) return;
+    const link = `${window.location.origin}/join/${trip.inviteToken}`;
+    navigator.clipboard.writeText(link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const totalExpense = expenses?.reduce((sum: number, e: any) => sum + e.amount, 0) || 0;
   const currentUserId = session?.user?.id;
@@ -232,6 +241,16 @@ export default function TripDetailPage() {
 
         {activeTab === "members" && (
           <div className="space-y-sm">
+            {isAdmin && (
+              <button
+                onClick={copyInviteLink}
+                className="w-full mb-4 bg-primary-container text-on-primary-container font-label-md text-label-md py-3 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all border border-primary/20 shadow-sm"
+              >
+                {copied ? <Check className="w-5 h-5 text-primary" /> : <LinkIcon className="w-5 h-5" />}
+                {copied ? "Invite Link Copied!" : "Copy Invite Link"}
+              </button>
+            )}
+            
             {trip.members.map((m: any) => (
               <div key={m.user.id} className="bg-surface-container-lowest rounded-xl p-md flex items-center gap-md shadow-sm border border-surface-container-low">
                 <div className="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-h2 text-h2">
