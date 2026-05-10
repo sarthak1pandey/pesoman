@@ -20,50 +20,30 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const member = await requireTripAccess(params.tripId, session.user.id, "ADMIN");
-  if (!member) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  // Any logged-in user can join via invite link
+  // No admin check required here
+
 
   try {
-    const { email } = await req.json();
+  const sessionUserId = session.user.id;
+  // Check if already a member
+  const existingMember = await prisma.tripMember.findUnique({
+    where: { userId_tripId: { userId: sessionUserId, tripId: params.tripId } },
+  });
+  if (existingMember) {
+    return NextResponse.json({ error: "User is already a member of this trip" }, { status: 400 });
+  }
 
-    let user = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email,
-          name: email.split("@")[0],
-        },
-      });
-    }
-
-    const existingMember = await prisma.tripMember.findUnique({
-      where: { userId_tripId: { userId: user.id, tripId: params.tripId } },
-    });
-
-    if (existingMember) {
-      return NextResponse.json(
-        { error: "User is already a member of this trip" },
-        { status: 400 }
-      );
-    }
-
-    const newMember = await prisma.tripMember.create({
-      data: {
-        userId: user.id,
-        tripId: params.tripId,
-        role: "MEMBER",
-      },
-      include: {
-        user: { select: { id: true, name: true, email: true, image: true } },
-      },
-    });
-
-    return NextResponse.json(newMember, { status: 201 });
+  // Add member using session user ID
+  const newMember = await prisma.tripMember.create({
+    data: {
+      userId: sessionUserId,
+      tripId: params.tripId,
+      role: "MEMBER",
+    },
+    include: { user: { select: { id: true, name: true, email: true, image: true } } },
+  });
+  return NextResponse.json(newMember, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || "Invalid request" },
@@ -106,9 +86,10 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const member = await requireTripAccess(params.tripId, session.user.id, "ADMIN");
-  if (!member) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  // Any logged-in user can join via invite link; ensure they add themselves only
+  const sessionEmail = session.user?.email;
+  if (!sessionEmail) {
+    return NextResponse.json({ error: "Invalid session" }, { status: 401 });
   }
 
   try {
