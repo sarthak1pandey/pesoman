@@ -31,7 +31,10 @@ export default function JoinPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: session.user?.email }),
-        }).then(() => trip.id as string);
+        }).then((res) => {
+          if (!res.ok) throw new Error("Failed to join");
+          return trip.id as string;
+        });
       })
       .then((tripId) => {
         setStatus("joined");
@@ -52,7 +55,7 @@ export default function JoinPage() {
               Sign in to join this trip on Pesoman.
             </p>
             <button
-              onClick={() => signIn("credentials", { email: "demo@pesoman.app", callbackUrl: `/join/${token}` })}
+              onClick={() => signIn(undefined, { callbackUrl: `/join/${token}` })}
               className="w-full bg-gradient-to-r from-primary to-secondary text-on-primary font-label-md text-label-md py-3 rounded-lg shadow-md hover:opacity-90 transition-opacity"
             >
               Sign In to Join
