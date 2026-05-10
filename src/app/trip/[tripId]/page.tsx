@@ -74,22 +74,22 @@ export default function TripDetailPage() {
       <TopBar />
 
       {/* Hero Header */}
-      <section className="relative h-[200px] md:h-[250px] w-full bg-surface-container-low overflow-hidden">
+      <section className="relative h-[250px] md:h-[300px] w-full bg-surface-container-low overflow-hidden rounded-b-3xl shadow-sm mb-4">
         <TripBannerImage
           emoji={trip.emoji}
           coverImage={trip.coverImage}
           alt={`${trip.name} cover`}
           className="absolute inset-0 w-full h-full object-cover z-0"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10" />
-        <div className="absolute bottom-0 left-0 w-full p-container-padding z-20 flex flex-col justify-end">
-          <Link href="/dashboard" className="text-white/80 font-body-md text-body-md flex items-center gap-1 mb-1 hover:text-white transition-colors">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10" />
+        <div className="absolute bottom-0 left-0 w-full p-container-padding pb-xl z-20 flex flex-col justify-end">
+          <Link href="/dashboard" className="text-white/90 font-label-md text-label-md flex items-center gap-1 mb-2 hover:text-white transition-colors w-fit bg-black/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
             <ArrowLeft className="w-4 h-4" />
             Back
           </Link>
-          <h1 className="font-display text-display text-white mb-1">{trip.emoji} {trip.name}</h1>
+          <h1 className="font-display text-[40px] leading-tight text-white mb-1 drop-shadow-md">{trip.emoji} {trip.name}</h1>
           {trip.startDate && (
-            <p className="font-body-md text-white/80 flex items-center gap-1">
+            <p className="font-body-md text-white/90 flex items-center gap-1 font-medium drop-shadow-md">
               {formatDate(trip.startDate)}
               {trip.endDate && ` - ${formatDate(trip.endDate)}`}
             </p>
