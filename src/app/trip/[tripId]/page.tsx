@@ -7,7 +7,7 @@ import { useTrip } from "@/hooks/useTrips";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useBalances } from "@/hooks/useBalances";
 import TopBar from "@/components/layout/TopBar";
-import BottomNav from "@/components/layout/BottomNav";
+
 import ExpenseCard from "@/components/trip/ExpenseCard";
 import AddExpenseModal from "@/components/trip/AddExpenseModal";
 import TripBannerImage from "@/components/trip/TripBannerImage";
@@ -79,7 +79,7 @@ export default function TripDetailPage() {
   const isAdmin = trip.members.find((m: any) => m.user.id === currentUserId)?.role === "ADMIN";
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-8">
       <TopBar />
 
       {/* Hero Header */}
@@ -275,7 +275,7 @@ export default function TripDetailPage() {
       {activeTab === "expenses" && (
         <button
           onClick={() => setShowAddExpense(true)}
-          className="fixed bottom-24 right-4 z-40 md:bottom-8 md:right-8 bg-gradient-to-br from-primary to-secondary text-white rounded-xl shadow-[0px_8px_20px_rgba(59,130,246,0.3)] flex items-center justify-center gap-2 px-6 py-4 hover:shadow-lg active:scale-95 transition-all"
+          className="fixed bottom-8 right-4 z-40 md:bottom-8 md:right-8 bg-gradient-to-br from-primary to-secondary text-white rounded-xl shadow-[0px_8px_20px_rgba(59,130,246,0.3)] flex items-center justify-center gap-2 px-6 py-4 hover:shadow-lg active:scale-95 transition-all"
         >
           <Plus className="w-5 h-5" />
           <span className="font-label-md text-label-md">Add Expense</span>
@@ -292,7 +292,6 @@ export default function TripDetailPage() {
         />
       )}
 
-      <BottomNav />
     </div>
   );
 }

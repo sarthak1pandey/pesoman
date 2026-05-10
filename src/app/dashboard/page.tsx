@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import TopBar from "@/components/layout/TopBar";
-import BottomNav from "@/components/layout/BottomNav";
+
 import TripCard from "@/components/trip/TripCard";
 import { useTrips } from "@/hooks/useTrips";
 import { Plus, Compass } from "lucide-react";
@@ -18,7 +18,7 @@ export default function DashboardPage() {
   const showTripSkeleton = status === "loading" || (sessionReady && isPending);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-8">
       <TopBar />
 
       <main className="px-container-padding py-lg max-w-3xl mx-auto min-h-[50vh]">
@@ -80,14 +80,13 @@ export default function DashboardPage() {
       {list.length > 0 && (
         <Link
           href="/trip/new"
-          className="fixed bottom-24 right-container-padding z-40 w-14 h-14 bg-gradient-to-br from-primary to-secondary-container rounded-full shadow-[0px_8px_20px_rgba(59,130,246,0.3)] flex items-center justify-center text-on-primary hover:scale-105 active:scale-95 transition-transform"
+          className="fixed bottom-8 right-container-padding z-40 w-14 h-14 bg-gradient-to-br from-primary to-secondary-container rounded-full shadow-[0px_8px_20px_rgba(59,130,246,0.3)] flex items-center justify-center text-on-primary hover:scale-105 active:scale-95 transition-transform"
           aria-label="Create trip"
         >
           <Plus className="w-7 h-7" />
         </Link>
       )}
 
-      <BottomNav />
     </div>
   );
 }

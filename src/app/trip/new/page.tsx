@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateTrip } from "@/hooks/useTrips";
 import TopBar from "@/components/layout/TopBar";
-import BottomNav from "@/components/layout/BottomNav";
+
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { TRIP_EMOJIS } from "@/lib/trip-emoji-banners";
@@ -58,7 +58,7 @@ export default function NewTripPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-8">
       <TopBar />
 
       <main className="px-container-padding py-lg max-w-2xl mx-auto">
@@ -238,7 +238,6 @@ export default function NewTripPage() {
         )}
       </main>
 
-      <BottomNav />
     </div>
   );
 }
