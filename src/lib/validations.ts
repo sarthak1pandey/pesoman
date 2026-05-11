@@ -9,7 +9,15 @@ export const createTripSchema = z.object({
   endDate: z.string().optional(),
 });
 
-export const updateTripSchema = createTripSchema.partial();
+export const updateTripSchema = z.object({
+  name: z.string().min(1, "Trip name is required").max(100).optional(),
+  description: z.string().max(500).optional(),
+  emoji: z.string().max(10).optional(),
+  currency: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  status: z.enum(["ACTIVE", "SETTLED", "ARCHIVED"]).optional(),
+});
 
 export const createExpenseSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),

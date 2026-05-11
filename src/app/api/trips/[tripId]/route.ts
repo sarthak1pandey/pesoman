@@ -83,6 +83,7 @@ export async function PATCH(
         ...(data.currency && { currency: data.currency }),
         ...(data.startDate && { startDate: new Date(data.startDate) }),
         ...(data.endDate && { endDate: new Date(data.endDate) }),
+        ...(data.status && { status: data.status }),
       },
     });
 

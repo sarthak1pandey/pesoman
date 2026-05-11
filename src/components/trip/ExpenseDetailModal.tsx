@@ -1,8 +1,9 @@
 "use client";
 
 import { useDeleteExpense } from "@/hooks/useExpenses";
+import { useCreateSettlement } from "@/hooks/useSettlements";
 import { formatCurrency, formatDate, getCategoryColor } from "@/lib/utils";
-import { X, Trash2, Calendar, User, Receipt, Info, MapPin, Utensils, Car, Hotel, Film, ShoppingBag, Fuel, PartyPopper } from "lucide-react";
+import { X, Trash2, Calendar, User, Receipt, Info, MapPin, Utensils, Car, Hotel, Film, ShoppingBag, Fuel, PartyPopper, CheckCircle } from "lucide-react";
 import { useState } from "react";
 
 const categoryIcons: Record<string, any> = {
@@ -44,7 +45,9 @@ export default function ExpenseDetailModal({
   onClose,
 }: ExpenseDetailModalProps) {
   const deleteExpense = useDeleteExpense(tripId);
+  const createSettlement = useCreateSettlement(tripId);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [settlingSplitId, setSettlingSplitId] = useState<string | null>(null);
 
   const isCreator = expense.paidBy.id === currentUserId;
   const canDelete = isAdmin || isCreator;
@@ -59,6 +62,25 @@ export default function ExpenseDetailModal({
     } catch (err: any) {
       alert(err.message || "Failed to delete expense");
       setIsDeleting(false);
+    }
+  };
+
+  const handleSettleSplit = async (split: any) => {
+    if (!confirm(`Mark ${split.user.name}'s share of ${formatCurrency(split.amount, currency)} as cleared?`)) return;
+    
+    setSettlingSplitId(split.user.id);
+    try {
+      await createSettlement.mutateAsync({
+        amount: split.amount,
+        payerId: split.user.id,
+        receiverId: expense.paidBy.id,
+        method: "MANUAL",
+        note: `Cleared for: ${expense.title}`,
+      });
+    } catch (err: any) {
+      alert(err.message || "Failed to clear expense for member");
+    } finally {
+      setSettlingSplitId(null);
     }
   };
 
@@ -137,21 +159,45 @@ export default function ExpenseDetailModal({
               <div>
                 <p className="font-caption text-caption text-on-surface-variant uppercase tracking-wider mb-sm">Split Breakdown</p>
                 <div className="space-y-sm">
-                  {expense.splits.map((split) => (
-                    <div key={split.user.id} className="flex justify-between items-center gap-lg">
-                      <span className="font-body-md text-on-surface">{split.user.name}</span>
-                      <div className="text-right">
-                        <span className="font-body-md text-on-surface font-medium tabular-nums">
-                          {formatCurrency(split.amount, currency)}
-                        </span>
-                        {split.percentage && (
-                          <span className="font-caption text-caption text-on-surface-variant ml-2">
-                            ({split.percentage}%)
-                          </span>
-                        )}
+                  {expense.splits.map((split) => {
+                    const isSplitPayer = split.user.id === expense.paidBy.id;
+                    const canSettle = !isSplitPayer && (isAdmin || isCreator || split.user.id === currentUserId);
+                    
+                    return (
+                      <div key={split.user.id} className="flex justify-between items-center gap-lg">
+                        <div className="flex items-center gap-2">
+                          <span className="font-body-md text-on-surface">{split.user.name}</span>
+                          {isSplitPayer && <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Payer</span>}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <span className="font-body-md text-on-surface font-medium tabular-nums">
+                              {formatCurrency(split.amount, currency)}
+                            </span>
+                            {split.percentage && (
+                              <span className="font-caption text-caption text-on-surface-variant ml-2">
+                                ({split.percentage}%)
+                              </span>
+                            )}
+                          </div>
+                          {canSettle && (
+                            <button
+                              onClick={() => handleSettleSplit(split)}
+                              disabled={settlingSplitId === split.user.id}
+                              className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition-colors disabled:opacity-50"
+                              title="Mark as cleared"
+                            >
+                              {settlingSplitId === split.user.id ? (
+                                <div className="w-4 h-4 border-2 border-primary border-t-transparent animate-spin rounded-full" />
+                              ) : (
+                                <CheckCircle className="w-4 h-4" />
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>

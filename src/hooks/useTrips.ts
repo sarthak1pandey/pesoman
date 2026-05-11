@@ -43,16 +43,21 @@ export function useCreateTrip() {
   });
 }
 
-export function useDeleteTrip() {
+export function useUpdateTrip(tripId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (tripId: string) => {
-      const res = await fetch(`/api/trips/${tripId}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete trip");
+    mutationFn: async (data: any) => {
+      const res = await fetch(`/api/trips/${tripId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to update trip");
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["trips"] });
+      queryClient.invalidateQueries({ queryKey: ["trips", tripId] });
     },
   });
 }

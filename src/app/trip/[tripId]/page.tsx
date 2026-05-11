@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useTrip } from "@/hooks/useTrips";
+import { useTrip, useUpdateTrip } from "@/hooks/useTrips";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useBalances } from "@/hooks/useBalances";
 import TopBar from "@/components/layout/TopBar";
@@ -13,7 +13,7 @@ import AddExpenseModal from "@/components/trip/AddExpenseModal";
 import ExpenseDetailModal from "@/components/trip/ExpenseDetailModal";
 import TripBannerImage from "@/components/trip/TripBannerImage";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Plus, ArrowLeft, Wallet, Users, Receipt, Link as LinkIcon, Check } from "lucide-react";
+import { Plus, ArrowLeft, Wallet, Users, Receipt, Link as LinkIcon, Check, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 type Tab = "expenses" | "balances" | "members";
@@ -24,10 +24,20 @@ export default function TripDetailPage() {
   const { data: trip, isLoading: tripLoading } = useTrip(tripId);
   const { data: expenses } = useExpenses(tripId);
   const { data: balanceData } = useBalances(tripId);
+  const updateTrip = useUpdateTrip(tripId);
   const [activeTab, setActiveTab] = useState<Tab>("expenses");
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<any>(null);
   const [copied, setCopied] = useState(false);
+
+  const endTrip = async () => {
+    if (!confirm("Are you sure you want to end this trip? This will mark it as settled.")) return;
+    try {
+      await updateTrip.mutateAsync({ status: "SETTLED" });
+    } catch (err: any) {
+      alert(err.message || "Failed to end trip");
+    }
+  };
 
   const copyInviteLink = () => {
     if (!trip?.inviteToken) return;
@@ -94,10 +104,27 @@ export default function TripDetailPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10" />
         <div className="absolute bottom-0 left-0 w-full p-container-padding pb-xl z-20 flex flex-col justify-end">
-          <Link href="/dashboard" className="text-white/90 font-label-md text-label-md flex items-center gap-1 mb-2 hover:text-white transition-colors w-fit bg-black/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Link>
+          <div className="flex items-center gap-2 mb-2">
+            <Link href="/dashboard" className="text-white/90 font-label-md text-label-md flex items-center gap-1 hover:text-white transition-colors w-fit bg-black/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Link>
+            {trip.status === "SETTLED" && (
+              <span className="bg-success/20 text-success-container backdrop-blur-md px-3 py-1.5 rounded-full font-label-md text-label-md flex items-center gap-1 border border-success/30">
+                <CheckCircle2 className="w-4 h-4" />
+                Settled
+              </span>
+            )}
+            {isAdmin && trip.status === "ACTIVE" && (
+              <button
+                onClick={endTrip}
+                disabled={updateTrip.isPending}
+                className="bg-white/20 text-white hover:bg-white/30 backdrop-blur-md px-3 py-1.5 rounded-full font-label-md text-label-md transition-all border border-white/10"
+              >
+                {updateTrip.isPending ? "Ending..." : "End Trip"}
+              </button>
+            )}
+          </div>
           <h1 className="font-display text-[40px] leading-tight text-white mb-1 drop-shadow-md">{trip.emoji} {trip.name}</h1>
           {trip.startDate && (
             <p className="font-body-md text-white/90 flex items-center gap-1 font-medium drop-shadow-md">
