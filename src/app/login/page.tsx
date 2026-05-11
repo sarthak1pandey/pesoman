@@ -42,35 +42,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block font-label-md text-label-md text-on-surface mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-primary to-secondary text-on-primary font-label-md text-label-md py-3 rounded-lg shadow-md hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
-          >
-            {loading ? "Signing in..." : "Continue with Email"}
-          </button>
-        </form>
-
-        <div className="mt-6 flex items-center gap-4">
-          <div className="flex-1 h-px bg-outline-variant" />
-          <span className="text-caption text-on-surface-variant">or</span>
-          <div className="flex-1 h-px bg-outline-variant" />
-        </div>
 
         <button
           onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
