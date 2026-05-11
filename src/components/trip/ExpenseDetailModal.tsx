@@ -30,6 +30,7 @@ interface ExpenseDetailModalProps {
     splits: Array<{ user: { id: string; name: string }; amount: number; percentage?: number | null }>;
     location?: string | null;
   };
+  settlements?: Array<{ expenseId?: string | null; payerId: string; amount: number }>;
   currency: string;
   currentUserId: string;
   isAdmin: boolean;
@@ -39,6 +40,7 @@ interface ExpenseDetailModalProps {
 export default function ExpenseDetailModal({
   tripId,
   expense,
+  settlements = [],
   currency,
   currentUserId,
   isAdmin,
@@ -74,6 +76,7 @@ export default function ExpenseDetailModal({
         amount: split.amount,
         payerId: split.user.id,
         receiverId: expense.paidBy.id,
+        expenseId: expense.id,
         method: "MANUAL",
         note: `Cleared for: ${expense.title}`,
       });
@@ -161,13 +164,15 @@ export default function ExpenseDetailModal({
                 <div className="space-y-sm">
                   {expense.splits.map((split) => {
                     const isSplitPayer = split.user.id === expense.paidBy.id;
-                    const canSettle = !isSplitPayer && (isAdmin || isCreator || split.user.id === currentUserId);
+                    const isSettled = settlements.some(s => s.expenseId === expense.id && s.payerId === split.user.id);
+                    const canSettle = !isSplitPayer && !isSettled && (isAdmin || isCreator || split.user.id === currentUserId);
                     
                     return (
                       <div key={split.user.id} className="flex justify-between items-center gap-lg">
                         <div className="flex items-center gap-2">
                           <span className="font-body-md text-on-surface">{split.user.name}</span>
                           {isSplitPayer && <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Payer</span>}
+                          {isSettled && <span className="text-[10px] bg-success/10 text-success px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Cleared</span>}
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="text-right">
@@ -180,11 +185,14 @@ export default function ExpenseDetailModal({
                               </span>
                             )}
                           </div>
+                          {isSettled && (
+                            <CheckCircle className="w-4 h-4 text-success shrink-0" />
+                          )}
                           {canSettle && (
                             <button
                               onClick={() => handleSettleSplit(split)}
                               disabled={settlingSplitId === split.user.id}
-                              className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition-colors disabled:opacity-50"
+                              className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition-colors disabled:opacity-50 shrink-0"
                               title="Mark as cleared"
                             >
                               {settlingSplitId === split.user.id ? (

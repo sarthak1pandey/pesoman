@@ -46,6 +46,7 @@ export const createSettlementSchema = z.object({
   note: z.string().max(500).optional(),
   payerId: z.string().min(1, "Payer is required"),
   receiverId: z.string().min(1, "Receiver is required"),
+  expenseId: z.string().optional(),
 });
 
 export const inviteMemberSchema = z.object({

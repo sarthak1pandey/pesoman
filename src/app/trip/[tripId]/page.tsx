@@ -350,6 +350,7 @@ export default function TripDetailPage() {
         <ExpenseDetailModal
           tripId={tripId}
           expense={selectedExpense}
+          settlements={trip?.settlements}
           currency={trip.currency}
           currentUserId={currentUserId || ""}
           isAdmin={isAdmin}

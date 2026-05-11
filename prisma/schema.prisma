@@ -108,6 +108,7 @@ model Expense {
   trip     Trip            @relation(fields: [tripId], references: [id], onDelete: Cascade)
   paidBy   User            @relation("PaidBy", fields: [paidById], references: [id])
   splits   ExpenseSplit[]
+  settlements Settlement[]
 }
 
 model ExpenseSplit {
@@ -135,9 +136,11 @@ model Settlement {
   tripId     String
   payerId    String
   receiverId String
+  expenseId  String?
   trip       Trip @relation(fields: [tripId], references: [id])
   payer      User @relation("Payer", fields: [payerId], references: [id])
   receiver   User @relation("Receiver", fields: [receiverId], references: [id])
+  expense    Expense? @relation(fields: [expenseId], references: [id], onDelete: SetNull)
 }
 
 model Notification {

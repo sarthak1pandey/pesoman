@@ -37,6 +37,7 @@ export async function POST(
         tripId: params.tripId,
         payerId: data.payerId,
         receiverId: data.receiverId,
+        expenseId: data.expenseId,
       },
       include: {
         payer: { select: { id: true, name: true, image: true } },
