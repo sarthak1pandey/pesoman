@@ -9,13 +9,14 @@ import { Plus, Compass } from "lucide-react";
 import Link from "next/link";
 
 export default function DashboardPage() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const sessionReady = status === "authenticated";
   const { data: trips, isPending, isError, error, refetch } = useTrips(sessionReady);
 
   const list = Array.isArray(trips) ? trips : [];
   const activeCount = list.filter((t) => t.status === "ACTIVE").length;
   const showTripSkeleton = status === "loading" || (sessionReady && isPending);
+  const currentUserId = (session?.user as any)?.id;
 
   return (
     <div className="min-h-screen bg-background pb-8">
@@ -72,7 +73,6 @@ export default function DashboardPage() {
           <div className="space-y-md">
             {list.map((trip) => {
               // Calculate user's net balance for this trip
-              const currentUserId = sessionReady ? (useSession().data?.user as any)?.id : null;
               let userNetBalance = 0;
 
               if (currentUserId && trip.expenses) {
