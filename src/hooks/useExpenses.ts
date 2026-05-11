@@ -35,3 +35,24 @@ export function useCreateExpense(tripId: string) {
     },
   });
 }
+
+export function useDeleteExpense(tripId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (expenseId: string) => {
+      const res = await fetch(`/api/trips/${tripId}/expenses/${expenseId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to delete expense");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["trips", tripId] });
+      queryClient.invalidateQueries({ queryKey: ["trips", tripId, "expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["trips", tripId, "balances"] });
+    },
+  });
+}

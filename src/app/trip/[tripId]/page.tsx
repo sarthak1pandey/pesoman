@@ -10,6 +10,7 @@ import TopBar from "@/components/layout/TopBar";
 
 import ExpenseCard from "@/components/trip/ExpenseCard";
 import AddExpenseModal from "@/components/trip/AddExpenseModal";
+import ExpenseDetailModal from "@/components/trip/ExpenseDetailModal";
 import TripBannerImage from "@/components/trip/TripBannerImage";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Plus, ArrowLeft, Wallet, Users, Receipt, Link as LinkIcon, Check } from "lucide-react";
@@ -25,6 +26,7 @@ export default function TripDetailPage() {
   const { data: balanceData } = useBalances(tripId);
   const [activeTab, setActiveTab] = useState<Tab>("expenses");
   const [showAddExpense, setShowAddExpense] = useState(false);
+  const [selectedExpense, setSelectedExpense] = useState<any>(null);
   const [copied, setCopied] = useState(false);
 
   const copyInviteLink = () => {
@@ -169,6 +171,7 @@ export default function TripDetailPage() {
                       expense={expense}
                       currency={trip.currency}
                       currentUserId={currentUserId || ""}
+                      onClick={() => setSelectedExpense(expense)}
                     />
                   ))}
                 </div>
@@ -289,6 +292,17 @@ export default function TripDetailPage() {
           currency={trip.currency}
           currentUserId={currentUserId || ""}
           onClose={() => setShowAddExpense(false)}
+        />
+      )}
+
+      {selectedExpense && (
+        <ExpenseDetailModal
+          tripId={tripId}
+          expense={selectedExpense}
+          currency={trip.currency}
+          currentUserId={currentUserId || ""}
+          isAdmin={isAdmin}
+          onClose={() => setSelectedExpense(null)}
         />
       )}
 

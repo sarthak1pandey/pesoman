@@ -26,9 +26,10 @@ interface ExpenseCardProps {
   };
   currency: string;
   currentUserId?: string;
+  onClick?: () => void;
 }
 
-export default function ExpenseCard({ expense, currency, currentUserId }: ExpenseCardProps) {
+export default function ExpenseCard({ expense, currency, currentUserId, onClick }: ExpenseCardProps) {
   const CategoryIcon = categoryIcons[expense.category] || Receipt;
   const categoryColorClass = getCategoryColor(expense.category);
   const [bgClass, textClass] = categoryColorClass.split(" ");
@@ -39,7 +40,10 @@ export default function ExpenseCard({ expense, currency, currentUserId }: Expens
   const owe = !isPayer ? (currentUserSplit?.amount || 0) : 0;
 
   return (
-    <div className="bg-surface-container-lowest rounded-xl p-md flex items-center gap-md shadow-sm border border-surface-container-low hover:bg-surface-container-low transition-colors cursor-pointer">
+    <div
+      onClick={onClick}
+      className="bg-surface-container-lowest rounded-xl p-md flex items-center gap-md shadow-sm border border-surface-container-low hover:bg-surface-container-low transition-colors cursor-pointer"
+    >
       <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${bgClass}`}>
         <CategoryIcon className={`w-5 h-5 ${textClass.replace("bg-", "").replace("/30", "").replace("/20", "")}`} />
       </div>
