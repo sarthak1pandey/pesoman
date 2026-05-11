@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Pesoman - Split Expenses Effortlessly",
   description: "The modern way to manage group expenses for trips, outings, and shared activities.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/icon.png",
   },
 };
 
