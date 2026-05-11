@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useTrip, useUpdateTrip } from "@/hooks/useTrips";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useBalances } from "@/hooks/useBalances";
+import { useCreateSettlement } from "@/hooks/useSettlements";
 import TopBar from "@/components/layout/TopBar";
 
 import ExpenseCard from "@/components/trip/ExpenseCard";
@@ -25,10 +26,26 @@ export default function TripDetailPage() {
   const { data: expenses } = useExpenses(tripId);
   const { data: balanceData } = useBalances(tripId);
   const updateTrip = useUpdateTrip(tripId);
+  const createSettlement = useCreateSettlement(tripId);
   const [activeTab, setActiveTab] = useState<Tab>("expenses");
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<any>(null);
   const [copied, setCopied] = useState(false);
+
+  const handleSettleUp = async (t: any) => {
+    if (!confirm(`Mark ${t.from.name}'s total debt of ${formatCurrency(t.amount, trip?.currency)} to ${t.to.name} as settled?`)) return;
+    try {
+      await createSettlement.mutateAsync({
+        amount: t.amount,
+        payerId: t.from.id,
+        receiverId: t.to.id,
+        method: "MANUAL",
+        note: `Full settlement up to ${new Date().toLocaleDateString()}`,
+      });
+    } catch (err: any) {
+      alert(err.message || "Failed to settle up");
+    }
+  };
 
   const endTrip = async () => {
     if (!confirm("Are you sure you want to end this trip? This will mark it as settled.")) return;
@@ -261,6 +278,13 @@ export default function TripDetailPage() {
                           {formatCurrency(t.amount, trip.currency)}
                         </div>
                       </div>
+                      <button
+                        onClick={() => handleSettleUp(t)}
+                        disabled={createSettlement.isPending}
+                        className="w-full mt-2 py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg font-label-md text-label-md transition-all flex items-center justify-center gap-2"
+                      >
+                        {createSettlement.isPending ? "Settling..." : "Settle Up"}
+                      </button>
                     </div>
                   ))}
                 </div>
