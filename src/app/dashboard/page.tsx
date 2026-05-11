@@ -70,9 +70,29 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-md">
-            {list.map((trip) => (
-              <TripCard key={trip.id} trip={trip} userNetBalance={0} />
-            ))}
+            {list.map((trip) => {
+              // Calculate user's net balance for this trip
+              const currentUserId = sessionReady ? (useSession().data?.user as any)?.id : null;
+              let userNetBalance = 0;
+
+              if (currentUserId && trip.expenses) {
+                trip.expenses.forEach((expense: any) => {
+                  const isPayer = expense.paidById === currentUserId;
+                  const userSplit = expense.splits.find((s: any) => s.userId === currentUserId);
+                  const userSplitAmount = userSplit ? userSplit.amount : 0;
+
+                  if (isPayer) {
+                    // If user paid, they are owed (Total Amount - Their share)
+                    userNetBalance += (expense.amount - userSplitAmount);
+                  } else if (userSplit) {
+                    // If user didn't pay but is in split, they owe their share
+                    userNetBalance -= userSplitAmount;
+                  }
+                });
+              }
+
+              return <TripCard key={trip.id} trip={trip} userNetBalance={userNetBalance} />;
+            })}
           </div>
         )}
       </main>
